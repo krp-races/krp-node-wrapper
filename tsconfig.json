@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "lib": ["ESNext"],
+        "module": "ESNext",
+        "target": "ES6",
+        "outDir": "dist",
+        "declaration": true
+    },
+    "include": [
+        "src"
+    ]
+}

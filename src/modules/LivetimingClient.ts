@@ -5,6 +5,7 @@ import { ClientStatus } from "../enums/ClientStatus";
 import { readStringLines } from "../utils/readStringLines";
 import { writeStringLines } from "../utils/writeStringLines";
 import { ClientEvents } from "../interfaces/ClientEvents";
+import { timeout } from "../utils/timeout";
 
 export class LivetimingClient extends EventEmitter<ClientEvents> {
   private enabled: boolean = false;
@@ -17,7 +18,12 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     this.options = options;
     this.socket = new SocketWrapper(options);
     this.socket.on("message", this.handleMessage.bind(this));
-    this.socket.on("error", this.handleError.bind(this));
+    this.socket.on("error", (err: Error) => {
+      this.disconnect();
+      this.handleError(err);
+    });
+
+    this.on("connected", this.handleKeepAlive.bind(this));
   }
 
   public setEnabled(enabled: boolean) {
@@ -46,7 +52,7 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     const data = writeStringLines(["CONNECT", this.options.password]);
     this.socket.send(data);
 
-    return new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       const listener = (msg: Buffer) => {
         const lines = readStringLines(msg);
 
@@ -71,6 +77,8 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
 
       this.socket.on("message", listener);
     });
+
+    return Promise.race([promise, timeout(5000)]);
   }
 
   public disconnect() {
@@ -80,6 +88,49 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     this.socket.send(data);
 
     this.setStatus(ClientStatus.NOT_CONNECTED);
+    this.emit("disconnected");
+  }
+
+  public async keepAlive() {
+    if (this.status !== ClientStatus.CONNECTED) return;
+
+    const data = writeStringLines(["KEEPALIVE"]);
+    this.socket.send(data);
+
+    const promise = new Promise((resolve) => {
+      const listener = (msg: Buffer) => {
+        const lines = readStringLines(msg);
+
+        switch (lines[0]) {
+          case "ALIVE":
+            resolve(undefined);
+            this.socket.removeListener("message", listener);
+            break;
+        }
+      };
+
+      this.socket.on("message", listener);
+    });
+
+    return Promise.race([promise, timeout(5000)]);
+  }
+
+  private start(trackPositions: 0 | 1, collisions: 0 | 1 | 2) {
+    if (this.status !== ClientStatus.CONNECTED) return;
+
+    const data = writeStringLines([
+      "START",
+      trackPositions.toFixed(0),
+      collisions.toFixed(0),
+    ]);
+
+    this.socket.send(data);
+  }
+
+  private acknowledge(messageId: string) {
+    if (this.status !== ClientStatus.CONNECTED) return;
+    const data = writeStringLines(["ACK", messageId]);
+    this.socket.send(data);
   }
 
   private async handleReconnect() {
@@ -91,20 +142,35 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     // When connected to a server, do not attempt to reconnect
     if (this.status === ClientStatus.CONNECTED) {
       this.emit("connected");
+      this.start(this.options.trackPositions, this.options.collisions);
       return;
     }
 
     // Attempt to reconnect in x milliseconds
-    setTimeout(
-      this.handleReconnect.bind(this),
-      this.options.intervals.ReconnectInterval,
-    );
+    setTimeout(this.handleReconnect.bind(this), 5000);
+  }
+
+  private async handleKeepAlive() {
+    if (this.status !== ClientStatus.CONNECTED) return;
+
+    await this.keepAlive().catch((err) => this.handleError(err));
+
+    setTimeout(this.handleKeepAlive.bind(this), 15000);
   }
 
   private handleMessage(msg: Buffer) {
     if (this.status !== ClientStatus.CONNECTED) return;
     const lines = readStringLines(msg);
-    console.log(lines);
+
+    switch (lines[0]) {
+      case "MSG":
+        console.log(lines);
+        this.acknowledge(lines[1]);
+        break;
+      case "DATA":
+        console.log(lines);
+        break;
+    }
   }
 
   private handleError(err: Error) {

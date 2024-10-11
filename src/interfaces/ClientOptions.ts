@@ -1,7 +1,7 @@
-import { ClientIntervals } from "./ClientIntervals";
 import { SocketOptions } from "./SocketOptions";
 
 export interface ClientOptions extends SocketOptions {
   password: string;
-  intervals: ClientIntervals;
+  trackPositions: 0 | 1;
+  collisions: 0 | 1 | 2;
 }

@@ -1,1 +1,4 @@
-export const hello = "Hello World";
+import { LivetimingClient } from "./modules/LivetimingClient";
+
+export { LivetimingClient } from "./modules/LivetimingClient";
+export default LivetimingClient;

@@ -14,7 +14,7 @@ export default {
             fileURLToPath(new URL(file, import.meta.url))
         ])
     ),
-    external: [],
+    external: ['events', 'dgram'],
     output: [
         {
             dir: 'dist',

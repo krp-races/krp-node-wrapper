@@ -6,8 +6,15 @@ import { readStringLines } from "../utils/readStringLines";
 import { writeStringLines } from "../utils/writeStringLines";
 import { ClientEvents } from "../interfaces/ClientEvents";
 import { timeout } from "../utils/timeout";
+import { LivetimingReader } from "./LivetimingReader";
+import { LiveTimingData } from "../interfaces/LiveTimingData";
+
+const defaultData: LiveTimingData = {
+  event: undefined,
+};
 
 export class LivetimingClient extends EventEmitter<ClientEvents> {
+  private data: LiveTimingData = defaultData;
   private enabled: boolean = false;
   private status: ClientStatus = ClientStatus.NOT_CONNECTED;
   private readonly options: ClientOptions;
@@ -58,6 +65,13 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
 
         switch (lines[0]) {
           case "OK":
+            if (lines[1] !== "krp") {
+              reject(new Error("Wrong game"));
+              this.setStatus(ClientStatus.NOT_CONNECTED);
+              this.socket.removeListener("message", listener);
+              break;
+            }
+
             resolve(undefined);
             this.setStatus(ClientStatus.CONNECTED);
             this.socket.removeListener("message", listener);
@@ -164,11 +178,18 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
 
     switch (lines[0]) {
       case "MSG":
-        console.log(lines);
-        this.acknowledge(lines[1]);
+        {
+          const reader = new LivetimingReader(lines, this.data);
+          this.data = reader.read();
+          this.acknowledge(lines[1]);
+        }
         break;
       case "DATA":
-        console.log(lines);
+        {
+          const reader = new LivetimingReader(lines, this.data, 1);
+          this.data = reader.read();
+          console.log(this.data);
+        }
         break;
     }
   }

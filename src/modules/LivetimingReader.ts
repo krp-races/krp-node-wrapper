@@ -1,6 +1,8 @@
 import { DataType } from "../enums/DataType";
 import { ChallengeType } from "../enums/Event/ChallengeType";
 import { EventType } from "../enums/Event/EventType";
+import { SessionState } from "../enums/Session/SessionState";
+import { SessionType } from "../enums/Session/SessionType";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
 
 export class LivetimingReader {
@@ -29,6 +31,10 @@ export class LivetimingReader {
         case DataType.ENTRY:
         case DataType.ENTRYREMOVE:
           this.readEntry();
+          break;
+        case DataType.SESSION:
+        case DataType.SESSIONSTATUS:
+          this.readSession();
           break;
         default:
           break;
@@ -107,6 +113,34 @@ export class LivetimingReader {
           if (!currentEntry) break;
           currentEntry.online = false;
           this.data.entries.set(raceNumber, currentEntry);
+        }
+        break;
+    }
+  }
+
+  private readSession() {
+    const type = this.lines[this.offset] as DataType;
+    const sessionType = this.lines[this.offset + 1] as SessionType;
+
+    switch (type) {
+      case DataType.SESSION:
+        {
+          const session = {
+            type: sessionType,
+            state: this.lines[this.offset + 2] as SessionState,
+            length: parseFloat(this.lines[this.offset + 3]),
+          };
+
+          if (session.type === SessionType.WAITING) this.data.sessions.clear();
+          this.data.sessions.set(session.type, session);
+        }
+        break;
+      case DataType.SESSIONSTATUS:
+        {
+          const currentSession = this.data.sessions.get(sessionType);
+          if (!currentSession) break;
+          currentSession.state = this.lines[this.offset + 2] as SessionState;
+          this.data.sessions.set(sessionType, currentSession);
         }
         break;
     }

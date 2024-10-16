@@ -9,9 +9,12 @@ import { timeout } from "../utils/timeout";
 import { LivetimingReader } from "./LivetimingReader";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
 import { Entry } from "../interfaces/Entry/Entry";
+import { SessionType } from "../enums/Session/SessionType";
+import { Session } from "../interfaces/Session/Session";
 
 const defaultData: LiveTimingData = {
   entries: new Map<number, Entry>(),
+  sessions: new Map<SessionType, Session>(),
 };
 
 export class LivetimingClient extends EventEmitter<ClientEvents> {

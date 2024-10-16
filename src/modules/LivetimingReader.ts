@@ -26,6 +26,10 @@ export class LivetimingReader {
         case DataType.EVENT:
           this.readEvent();
           break;
+        case DataType.ENTRY:
+        case DataType.ENTRYREMOVE:
+          this.readEntry();
+          break;
         default:
           break;
       }
@@ -70,6 +74,40 @@ export class LivetimingReader {
           },
           allowed: this.lines[this.offset + 5].replace(" + ", "/").split("/"),
         };
+        break;
+    }
+  }
+
+  private readEntry() {
+    const type = this.lines[this.offset] as DataType;
+    const raceNumber = parseInt(this.lines[this.offset + 1]);
+
+    switch (type) {
+      case DataType.ENTRY:
+        {
+          const entry = {
+            raceNumber,
+            name: this.lines[this.offset + 2],
+            kart: {
+              name: this.lines[this.offset + 3],
+              shortName: this.lines[this.offset + 4],
+              categories: this.lines[this.offset + 5].split("/"),
+            },
+            guid: this.lines[this.offset + 6],
+            extra: this.lines[this.offset + 7],
+            online: true,
+          };
+
+          this.data.entries.set(entry.raceNumber, entry);
+        }
+        break;
+      case DataType.ENTRYREMOVE:
+        {
+          const currentEntry = this.data.entries.get(raceNumber);
+          if (!currentEntry) break;
+          currentEntry.online = false;
+          this.data.entries.set(raceNumber, currentEntry);
+        }
         break;
     }
   }

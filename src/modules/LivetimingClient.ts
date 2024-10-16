@@ -8,9 +8,10 @@ import { ClientEvents } from "../interfaces/ClientEvents";
 import { timeout } from "../utils/timeout";
 import { LivetimingReader } from "./LivetimingReader";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
+import { Entry } from "../interfaces/Entry/Entry";
 
 const defaultData: LiveTimingData = {
-  event: undefined,
+  entries: new Map<number, Entry>(),
 };
 
 export class LivetimingClient extends EventEmitter<ClientEvents> {

@@ -182,6 +182,7 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
           const reader = new LivetimingReader(lines, this.data);
           this.data = reader.read();
           this.acknowledge(lines[1]);
+          console.log(this.data);
         }
         break;
       case "DATA":

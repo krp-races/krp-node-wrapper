@@ -6,10 +6,11 @@ import { Speed } from "./Speed";
 import { Split } from "./Split";
 
 export interface SessionEntry {
+  raceNumber: number;
   state: DriverStatusState;
   reason: DriverStatusReason;
-  bestLap: Lap;
-  lastLap: Lap;
+  bestLap?: Lap;
+  lastLap?: Lap;
   laps: Lap[];
   penalties: Penalty[];
   splits: Split[];

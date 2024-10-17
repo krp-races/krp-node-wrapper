@@ -1,6 +1,10 @@
 import { DataType } from "../enums/DataType";
 import { ChallengeType } from "../enums/Event/ChallengeType";
 import { EventType } from "../enums/Event/EventType";
+import { DriverStatusReason } from "../enums/Session/SessionEntry/DriverStatusReason";
+import { DriverStatusState } from "../enums/Session/SessionEntry/DriverStatusState";
+import { PenaltyOffence } from "../enums/Session/SessionEntry/PenaltyOffence";
+import { PenaltyType } from "../enums/Session/SessionEntry/PenaltyType";
 import { SessionState } from "../enums/Session/SessionState";
 import { SessionType } from "../enums/Session/SessionType";
 import { WeatherCondition } from "../enums/Session/WeatherCondition";
@@ -37,6 +41,14 @@ export class LivetimingReader {
         case DataType.SESSION:
         case DataType.SESSIONSTATUS:
         case DataType.WEATHER:
+        case DataType.SESSIONENTRY:
+        case DataType.DRIVERSTATUS:
+        case DataType.BESTLAP:
+        case DataType.LASTLAP:
+        case DataType.PENALTY:
+        case DataType.LAP:
+        case DataType.SPLIT:
+        case DataType.SPEED:
           this.readSession();
           break;
         default:
@@ -150,7 +162,6 @@ export class LivetimingReader {
       case DataType.WEATHER:
         {
           const sessionKey = this.getCurrentSessionKey();
-          console.log("Key:", sessionKey);
           if (!sessionKey) break;
           const currentSession = this.data.sessions.get(sessionKey);
           if (!currentSession) break;
@@ -163,6 +174,209 @@ export class LivetimingReader {
 
           currentSession.weather = weather;
           this.data.sessions.set(sessionKey, currentSession);
+        }
+        break;
+      case DataType.SESSIONENTRY:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+
+          const entry = {
+            raceNumber,
+            state: DriverStatusState.NONE,
+            reason: DriverStatusReason.NONE,
+            laps: [],
+            penalties: [],
+            splits: [],
+            speeds: [],
+          };
+
+          currentSession.entries.set(raceNumber, entry);
+        }
+        break;
+      case DataType.DRIVERSTATUS:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const state = this.lines[this.offset + 2] as DriverStatusState;
+          const reason = this.lines[this.offset + 3] as DriverStatusReason;
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.state = state;
+          currentEntry.reason = reason;
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.BESTLAP:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const sessionTime = parseFloat(this.lines[this.offset + 2]);
+          const lapTime = parseFloat(this.lines[this.offset + 3]);
+          const lapNumber = parseInt(this.lines[this.offset + 4]);
+          const split1 = parseFloat(this.lines[this.offset + 5]);
+          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const speed = parseFloat(this.lines[this.offset + 7]);
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.bestLap = {
+            raceNumber,
+            sessionTime,
+            lapTime,
+            lapNumber,
+            splits: [split1, split2],
+            speed,
+          };
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.LASTLAP:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const sessionTime = parseFloat(this.lines[this.offset + 2]);
+          const lapTime = parseFloat(this.lines[this.offset + 3]);
+          const lapNumber = parseInt(this.lines[this.offset + 4]);
+          const split1 = parseFloat(this.lines[this.offset + 5]);
+          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const speed = parseFloat(this.lines[this.offset + 7]);
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.lastLap = {
+            raceNumber,
+            sessionTime,
+            lapTime,
+            lapNumber,
+            splits: [split1, split2],
+            speed,
+          };
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.PENALTY:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const penaltyNumber = parseInt(this.lines[this.offset + 2]);
+          const type = this.lines[this.offset + 3] as PenaltyType;
+          const penalty = parseFloat(this.lines[this.offset + 4]);
+          const offence = this.lines[this.offset + 5] as PenaltyOffence;
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.penalties.push({
+            raceNumber,
+            penaltyNumber,
+            type,
+            penalty,
+            offence,
+          });
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.LAP:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const sessionTime = parseFloat(this.lines[this.offset + 2]);
+          const lapTime = parseFloat(this.lines[this.offset + 3]);
+          const lapNumber = parseInt(this.lines[this.offset + 4]);
+          const split1 = parseFloat(this.lines[this.offset + 5]);
+          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const speed = parseFloat(this.lines[this.offset + 7]);
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.laps.push({
+            raceNumber,
+            sessionTime,
+            lapTime,
+            lapNumber,
+            splits: [split1, split2],
+            speed,
+          });
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.SPLIT:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const splitNumber = parseInt(this.lines[this.offset + 2]);
+          const splitTime = parseFloat(this.lines[this.offset + 2]);
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.splits.push({
+            raceNumber,
+            splitNumber,
+            splitTime,
+          });
+
+          currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.SPEED:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const raceNumber = parseInt(this.lines[this.offset + 1]);
+          const speed = parseFloat(this.lines[this.offset + 2]);
+
+          const currentEntry = currentSession.entries.get(raceNumber);
+          if (!currentEntry) break;
+
+          currentEntry.speeds.push({
+            raceNumber,
+            speed,
+          });
+
+          currentSession.entries.set(raceNumber, currentEntry);
         }
         break;
     }

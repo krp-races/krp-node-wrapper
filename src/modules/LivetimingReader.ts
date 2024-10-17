@@ -3,7 +3,9 @@ import { ChallengeType } from "../enums/Event/ChallengeType";
 import { EventType } from "../enums/Event/EventType";
 import { SessionState } from "../enums/Session/SessionState";
 import { SessionType } from "../enums/Session/SessionType";
+import { WeatherCondition } from "../enums/Session/WeatherCondition";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
+import { SessionEntry } from "../interfaces/Session/SessionEntry/SessionEntry";
 
 export class LivetimingReader {
   private offset: number;
@@ -34,6 +36,7 @@ export class LivetimingReader {
           break;
         case DataType.SESSION:
         case DataType.SESSIONSTATUS:
+        case DataType.WEATHER:
           this.readSession();
           break;
         default:
@@ -120,15 +123,15 @@ export class LivetimingReader {
 
   private readSession() {
     const type = this.lines[this.offset] as DataType;
-    const sessionType = this.lines[this.offset + 1] as SessionType;
 
     switch (type) {
       case DataType.SESSION:
         {
           const session = {
-            type: sessionType,
+            type: this.lines[this.offset + 1] as SessionType,
             state: this.lines[this.offset + 2] as SessionState,
             length: parseFloat(this.lines[this.offset + 3]),
+            entries: new Map<number, SessionEntry>(),
           };
 
           if (session.type === SessionType.WAITING) this.data.sessions.clear();
@@ -137,12 +140,47 @@ export class LivetimingReader {
         break;
       case DataType.SESSIONSTATUS:
         {
+          const sessionType = this.lines[this.offset + 1] as SessionType;
           const currentSession = this.data.sessions.get(sessionType);
           if (!currentSession) break;
           currentSession.state = this.lines[this.offset + 2] as SessionState;
           this.data.sessions.set(sessionType, currentSession);
         }
         break;
+      case DataType.WEATHER:
+        {
+          const sessionKey = this.getCurrentSessionKey();
+          console.log("Key:", sessionKey);
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionKey);
+          if (!currentSession) break;
+
+          const weather = {
+            condition: this.lines[this.offset + 1] as WeatherCondition,
+            air: parseFloat(this.lines[this.offset + 2]),
+            track: parseFloat(this.lines[this.offset + 3]),
+          };
+
+          currentSession.weather = weather;
+          this.data.sessions.set(sessionKey, currentSession);
+        }
+        break;
     }
+  }
+
+  private getCurrentSessionKey() {
+    const sessions = this.data.sessions;
+    if (sessions.size === 0) return undefined;
+
+    for (const session of sessions.values()) {
+      if (
+        session.state === SessionState.COMPLETE ||
+        session.state === SessionState.NONE
+      )
+        continue;
+      return session.type;
+    }
+
+    return sessions.keys().next().value;
   }
 }

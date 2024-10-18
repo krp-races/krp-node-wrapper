@@ -186,14 +186,22 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
           const reader = new LivetimingReader(lines, this.data);
           this.data = reader.read();
           this.acknowledge(lines[1]);
-          console.log(this.data);
+          console.log(
+            this.data.sessions.forEach((session) =>
+              console.log(session.classification?.entries),
+            ),
+          );
         }
         break;
       case "DATA":
         {
-          //const reader = new LivetimingReader(lines, this.data, 1);
-          //this.data = reader.read();
-          //console.log(this.data);
+          const reader = new LivetimingReader(lines, this.data, 1);
+          this.data = reader.read();
+          console.log(
+            this.data.sessions.forEach((session) =>
+              console.log(session.classification?.entries),
+            ),
+          );
         }
         break;
     }

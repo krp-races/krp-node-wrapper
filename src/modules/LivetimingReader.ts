@@ -1,6 +1,8 @@
 import { DataType } from "../enums/DataType";
 import { ChallengeType } from "../enums/Event/ChallengeType";
 import { EventType } from "../enums/Event/EventType";
+import { KartStatus } from "../enums/Session/Classification/KartStatus";
+import { RaceStatus } from "../enums/Session/Classification/RaceStatus";
 import { DriverStatusReason } from "../enums/Session/SessionEntry/DriverStatusReason";
 import { DriverStatusState } from "../enums/Session/SessionEntry/DriverStatusState";
 import { PenaltyOffence } from "../enums/Session/SessionEntry/PenaltyOffence";
@@ -9,6 +11,8 @@ import { SessionState } from "../enums/Session/SessionState";
 import { SessionType } from "../enums/Session/SessionType";
 import { WeatherCondition } from "../enums/Session/WeatherCondition";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
+import { RaceData } from "../interfaces/Session/Classification/RaceData";
+import { TimeData } from "../interfaces/Session/Classification/TimeData";
 import { SessionEntry } from "../interfaces/Session/SessionEntry/SessionEntry";
 
 export class LivetimingReader {
@@ -23,12 +27,8 @@ export class LivetimingReader {
   }
 
   public read() {
-    console.log(this.lines);
-
-    const updated: string[] = [];
     while (this.offset !== -1) {
       const type = this.lines[this.offset] as DataType;
-      updated.push(type);
 
       switch (type) {
         case DataType.EVENT:
@@ -49,6 +49,7 @@ export class LivetimingReader {
         case DataType.LAP:
         case DataType.SPLIT:
         case DataType.SPEED:
+        case DataType.CLASSIFICATION:
           this.readSession();
           break;
         default:
@@ -63,7 +64,6 @@ export class LivetimingReader {
       );
     }
 
-    console.log(updated);
     return this.data;
   }
 
@@ -377,6 +377,107 @@ export class LivetimingReader {
           });
 
           currentSession.entries.set(raceNumber, currentEntry);
+        }
+        break;
+      case DataType.CLASSIFICATION:
+        {
+          const sessionType = this.lines[this.offset + 1] as SessionType;
+          const sessionState = this.lines[this.offset + 2] as SessionState;
+          const sessionTimer = parseFloat(this.lines[this.offset + 3]);
+          const sessionLength = parseFloat(this.lines[this.offset + 4]);
+          const sessionLap = parseInt(this.lines[this.offset + 5]);
+          const sessionLaps = parseInt(this.lines[this.offset + 6]);
+
+          const sessionKey = this.getCurrentSessionKey();
+          if (!sessionKey) break;
+          const currentSession = this.data.sessions.get(sessionType);
+          if (!currentSession) break;
+
+          const classification = {
+            type: sessionType,
+            state: sessionState,
+            timer: sessionTimer,
+            length: sessionLength,
+            lap: sessionLap,
+            laps: sessionLaps,
+            entries: new Map<number, TimeData | RaceData>(),
+          };
+
+          let entryOffset = this.offset + 7;
+
+          const isPractise =
+            sessionType.toUpperCase().startsWith(SessionType.PRACTICE) ||
+            sessionType.toUpperCase().startsWith(SessionType.QUALIFY) ||
+            sessionType.toUpperCase().startsWith(SessionType.WARMUP);
+
+          const readEntry = () => {
+            const raceNumber = parseInt(this.lines[entryOffset]);
+            entryOffset++;
+
+            let entry: TimeData | RaceData | undefined;
+
+            if (isPractise) {
+              entry = {
+                raceNumber,
+                lapTime: 0,
+                lapNumber: 0,
+                totalLaps: 0,
+                gap: "--",
+                speed: 0,
+                status: KartStatus.NONE,
+              } as TimeData;
+
+              console.log(this.lines[entryOffset]);
+              entry.lapTime = parseFloat(this.lines[entryOffset]);
+              entryOffset++;
+
+              if (entry.lapTime !== 0) {
+                entry.lapNumber = parseInt(this.lines[entryOffset]);
+                entryOffset++;
+                entry.totalLaps = parseInt(this.lines[entryOffset]);
+                entryOffset++;
+                const gap = this.lines[entryOffset];
+                entry.gap = gap === "--" ? "--" : parseFloat(gap);
+                entryOffset++;
+                entry.speed = parseFloat(this.lines[entryOffset]);
+                entryOffset++;
+              }
+            } else {
+              entry = {
+                raceNumber,
+                raceTime: 0,
+                lapNumber: 0,
+                gap: 0,
+                status: KartStatus.NONE,
+              } as RaceData;
+
+              const raceTime = this.lines[entryOffset];
+              entry.raceTime = Object.values(RaceStatus).includes(
+                raceTime as RaceStatus,
+              )
+                ? (raceTime as RaceStatus)
+                : parseFloat(raceTime);
+              entryOffset++;
+
+              if (entry.raceTime !== 0 && typeof entry.raceTime === "number") {
+                entry.lapNumber = parseInt(this.lines[entryOffset]);
+                entryOffset++;
+                const gap = this.lines[entryOffset];
+                entry.gap = gap === "L" ? "L" : parseFloat(gap);
+                entryOffset++;
+              }
+            }
+
+            entry.status = this.lines[entryOffset] as KartStatus;
+            entryOffset++;
+
+            classification.entries.set(raceNumber, entry);
+          };
+
+          while (this.lines[entryOffset] !== "") readEntry();
+
+          currentSession.classification = classification;
+          this.data.sessions.set(sessionType, currentSession);
         }
         break;
     }

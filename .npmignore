@@ -1,0 +1,8 @@
+.github
+.husky
+src
+.prettierrc
+eslint.config.mjs
+jest.config.js
+rollup.config.mjs
+test_local.js

@@ -10,6 +10,9 @@ import { PenaltyType } from "../enums/Session/SessionEntry/PenaltyType";
 import { SessionState } from "../enums/Session/SessionState";
 import { SessionType } from "../enums/Session/SessionType";
 import { WeatherCondition } from "../enums/Session/WeatherCondition";
+import { ChallengeEvent } from "../interfaces/Event/ChallengeEvent";
+import { ChallengePracticeData } from "../interfaces/Event/ChallengePracticeData";
+import { ChallengeRaceData } from "../interfaces/Event/ChallengeRaceData";
 import { LiveTimingData } from "../interfaces/LiveTimingData";
 import { RaceData } from "../interfaces/Session/Classification/RaceData";
 import { TimeData } from "../interfaces/Session/Classification/TimeData";
@@ -33,6 +36,9 @@ export class LivetimingReader {
       switch (type) {
         case DataType.EVENT:
           this.readEvent();
+          break;
+        case DataType.CHALLENGEDATA:
+          this.readChallengeData();
           break;
         case DataType.ENTRY:
         case DataType.ENTRYREMOVE:
@@ -83,6 +89,10 @@ export class LivetimingReader {
           challengeType: this.lines[this.offset + 6] as ChallengeType,
           challengeLength: parseFloat(this.lines[this.offset + 7]),
           challengeMaxTries: parseInt(this.lines[this.offset + 8]),
+          challengeData: new Map<
+            string,
+            ChallengeRaceData | ChallengePracticeData
+          >(),
         };
         break;
       default:
@@ -97,6 +107,46 @@ export class LivetimingReader {
         };
         break;
     }
+  }
+
+  private readChallengeData() {
+    if (this.data.event?.type !== EventType.CHALLENGE) return;
+    const event = this.data.event as ChallengeEvent;
+
+    let data: ChallengeRaceData | ChallengePracticeData | undefined;
+    switch (event.challengeType) {
+      case ChallengeType.PRACTICE:
+        data = {
+          name: this.lines[this.offset + 1],
+          kart: {
+            name: this.lines[this.offset + 2],
+            shortName: this.lines[this.offset + 3],
+          },
+          guid: this.lines[this.offset + 4],
+          extra: this.lines[this.offset + 5],
+          try: parseInt(this.lines[this.offset + 6]),
+          bestLap: parseFloat(this.lines[this.offset + 7]),
+          lapNumber: parseInt(this.lines[this.offset + 8]),
+          totalLaps: parseInt(this.lines[this.offset + 9]),
+        };
+        break;
+      case ChallengeType.RACE:
+        data = {
+          name: this.lines[this.offset + 1],
+          kart: {
+            name: this.lines[this.offset + 2],
+            shortName: this.lines[this.offset + 3],
+          },
+          guid: this.lines[this.offset + 4],
+          extra: this.lines[this.offset + 5],
+          try: parseInt(this.lines[this.offset + 6]),
+        };
+        break;
+    }
+
+    if (!data) return;
+    event.challengeData.set(data.guid, data);
+    this.data.event = event;
   }
 
   private readEntry() {

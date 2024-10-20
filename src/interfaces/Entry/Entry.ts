@@ -1,9 +1,9 @@
-import { Kart } from "./Kart";
+import { EntryKart } from "./EntryKart";
 
 export interface Entry {
   raceNumber: number;
   name: string;
-  kart: Kart;
+  kart: EntryKart;
   guid: string;
   extra: string;
   online: boolean;

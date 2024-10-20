@@ -32,3 +32,6 @@ jobs:
         - run: pnpm publish --access restricted --no-git-checks
           env:
             NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  packages: write 

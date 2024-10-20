@@ -292,8 +292,10 @@ export class LivetimingReader {
           const sessionTime = parseFloat(this.lines[this.offset + 2]);
           const lapTime = parseFloat(this.lines[this.offset + 3]);
           const lapNumber = parseInt(this.lines[this.offset + 4]);
-          const split1 = parseFloat(this.lines[this.offset + 5]);
-          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const splits = Vec2(
+            parseFloat(this.lines[this.offset + 5]),
+            parseFloat(this.lines[this.offset + 6]),
+          );
           const speed = parseFloat(this.lines[this.offset + 7]);
 
           const currentEntry = currentSession.entries.get(raceNumber);
@@ -304,7 +306,7 @@ export class LivetimingReader {
             sessionTime,
             lapTime,
             lapNumber,
-            splits: [split1, split2],
+            splits,
             speed,
           };
 
@@ -322,8 +324,10 @@ export class LivetimingReader {
           const sessionTime = parseFloat(this.lines[this.offset + 2]);
           const lapTime = parseFloat(this.lines[this.offset + 3]);
           const lapNumber = parseInt(this.lines[this.offset + 4]);
-          const split1 = parseFloat(this.lines[this.offset + 5]);
-          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const splits = Vec2(
+            parseFloat(this.lines[this.offset + 5]),
+            parseFloat(this.lines[this.offset + 6]),
+          );
           const speed = parseFloat(this.lines[this.offset + 7]);
 
           const currentEntry = currentSession.entries.get(raceNumber);
@@ -334,7 +338,7 @@ export class LivetimingReader {
             sessionTime,
             lapTime,
             lapNumber,
-            splits: [split1, split2],
+            splits,
             speed,
           };
 
@@ -379,8 +383,10 @@ export class LivetimingReader {
           const sessionTime = parseFloat(this.lines[this.offset + 2]);
           const lapTime = parseFloat(this.lines[this.offset + 3]);
           const lapNumber = parseInt(this.lines[this.offset + 4]);
-          const split1 = parseFloat(this.lines[this.offset + 5]);
-          const split2 = parseFloat(this.lines[this.offset + 6]);
+          const splits = Vec2(
+            parseFloat(this.lines[this.offset + 5]),
+            parseFloat(this.lines[this.offset + 6]),
+          );
           const speed = parseFloat(this.lines[this.offset + 7]);
 
           const currentEntry = currentSession.entries.get(raceNumber);
@@ -391,7 +397,7 @@ export class LivetimingReader {
             sessionTime,
             lapTime,
             lapNumber,
-            splits: [split1, split2],
+            splits,
             speed,
           });
 
@@ -549,10 +555,10 @@ export class LivetimingReader {
   private readContact() {
     this.data.contacts.push({
       time: parseFloat(this.lines[this.offset + 1]),
-      raceNumbers: [
+      raceNumbers: Vec2(
         parseInt(this.lines[this.offset + 2]),
         parseInt(this.lines[this.offset + 3]),
-      ],
+      ),
       velocity: parseFloat(this.lines[this.offset + 4]),
     });
   }

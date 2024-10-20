@@ -202,24 +202,27 @@ export class LivetimingReader {
     switch (type) {
       case DataType.SESSION:
         {
+          const sessionType = this.readSessionType(this.lines[this.offset + 1]);
+
           const session = {
-            type: this.lines[this.offset + 1] as SessionType,
+            type: sessionType.type,
+            count: sessionType.count,
             state: this.lines[this.offset + 2] as SessionState,
             length: parseFloat(this.lines[this.offset + 3]),
             entries: new Map<number, SessionEntry>(),
           };
 
           if (session.type === SessionType.WAITING) this.data.sessions.clear();
-          this.data.sessions.set(session.type, session);
+          this.data.sessions.set(sessionType.combined, session);
         }
         break;
       case DataType.SESSIONSTATUS:
         {
-          const sessionType = this.lines[this.offset + 1] as SessionType;
-          const currentSession = this.data.sessions.get(sessionType);
+          const sessionType = this.readSessionType(this.lines[this.offset + 1]);
+          const currentSession = this.data.sessions.get(sessionType.combined);
           if (!currentSession) break;
           currentSession.state = this.lines[this.offset + 2] as SessionState;
-          this.data.sessions.set(sessionType, currentSession);
+          this.data.sessions.set(sessionType.combined, currentSession);
         }
         break;
       case DataType.WEATHER:
@@ -450,7 +453,7 @@ export class LivetimingReader {
         break;
       case DataType.CLASSIFICATION:
         {
-          const sessionType = this.lines[this.offset + 1] as SessionType;
+          const sessionType = this.readSessionType(this.lines[this.offset + 1]);
           const sessionState = this.lines[this.offset + 2] as SessionState;
           const sessionTimer = parseFloat(this.lines[this.offset + 3]);
           const sessionLength = parseFloat(this.lines[this.offset + 4]);
@@ -459,11 +462,12 @@ export class LivetimingReader {
 
           const sessionKey = this.getCurrentSessionKey();
           if (!sessionKey) break;
-          const currentSession = this.data.sessions.get(sessionType);
+          const currentSession = this.data.sessions.get(sessionType.combined);
           if (!currentSession) break;
 
           const classification = {
-            type: sessionType,
+            type: sessionType.type,
+            count: sessionType.count,
             state: sessionState,
             timer: sessionTimer,
             length: sessionLength,
@@ -475,9 +479,9 @@ export class LivetimingReader {
           let entryOffset = this.offset + 7;
 
           const isPractise =
-            sessionType.toUpperCase().startsWith(SessionType.PRACTICE) ||
-            sessionType.toUpperCase().startsWith(SessionType.QUALIFY) ||
-            sessionType.toUpperCase().startsWith(SessionType.WARMUP);
+            sessionType.type === SessionType.PRACTICE ||
+            sessionType.type === SessionType.QUALIFY ||
+            sessionType.type === SessionType.WARMUP;
 
           const readEntry = () => {
             const raceNumber = parseInt(this.lines[entryOffset]);
@@ -545,7 +549,7 @@ export class LivetimingReader {
           while (this.lines[entryOffset] !== "") readEntry();
 
           currentSession.classification = classification;
-          this.data.sessions.set(sessionType, currentSession);
+          this.data.sessions.set(sessionType.combined, currentSession);
         }
         break;
     }
@@ -630,9 +634,18 @@ export class LivetimingReader {
         session.state === SessionState.NONE
       )
         continue;
-      return session.type;
+      return `${session.type}${session.count ? " " + session.count : ""}`;
     }
 
     return sessions.keys().next().value;
+  }
+
+  private readSessionType(str: string) {
+    const split = str.toUpperCase().split(" ");
+    return {
+      type: split[0] as SessionType,
+      count: parseInt(split[1]) || undefined,
+      combined: str,
+    };
   }
 }

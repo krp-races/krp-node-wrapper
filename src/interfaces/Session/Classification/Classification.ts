@@ -1,9 +1,11 @@
 import { SessionState } from "../../../enums/Session/SessionState";
+import { SessionType } from "../../../enums/Session/SessionType";
 import { RaceData } from "./RaceData";
 import { TimeData } from "./TimeData";
 
 export interface Classification {
-  type: string;
+  type: SessionType;
+  count?: number;
   state: SessionState;
   timer: number;
   length: number;

@@ -6,6 +6,7 @@ import { Weather } from "./Weather";
 
 export interface Session {
   type: SessionType;
+  count?: number;
   state: SessionState;
   length: number;
   weather?: Weather;

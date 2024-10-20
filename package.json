@@ -1,5 +1,5 @@
 {
-  "name": "krp-livetiming-client",
+  "name": "@krp-races/krp-livetiming-client",
   "description": "A client to receive live data from a dedicated or challenge server in kart racing pro.",
   "author": "Fynn Haupt <info@fynnhaupt.de>",
   "version": "1.0.0",
@@ -21,6 +21,9 @@
   },
   "bugs": {
     "url": "https://github.com/krp-races/krp-livetiming-client/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "rollup -c",

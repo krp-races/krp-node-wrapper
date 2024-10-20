@@ -102,4 +102,19 @@ describe("LivetimingReader", () => {
     expect(entry?.extra).toBe("");
     expect(entry?.online).toBe(false);
   });
+
+  test("Read Contact", () => {
+    const data = ["MSG", "1", "CONTACT", "1000", "1", "2", "10.0", ""];
+
+    let result = createEmptyData();
+    const reader = new LivetimingReader(data, result);
+    result = reader.read();
+
+    expect(result.contacts.length).toBe(1);
+    const contact = result.contacts[0];
+    expect(contact.time).toBe(1000);
+    expect(contact.raceNumbers.x).toBe(1);
+    expect(contact.raceNumbers.y).toBe(2);
+    expect(contact.velocity).toBe(10.0);
+  });
 });

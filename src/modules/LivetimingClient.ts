@@ -15,6 +15,7 @@ import { Session } from "../interfaces/Session/Session";
 const defaultData: LiveTimingData = {
   entries: new Map<number, Entry>(),
   sessions: new Map<SessionType, Session>(),
+  contacts: [],
 };
 
 export class LivetimingClient extends EventEmitter<ClientEvents> {

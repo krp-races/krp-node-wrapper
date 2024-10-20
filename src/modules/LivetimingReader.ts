@@ -58,6 +58,9 @@ export class LivetimingReader {
         case DataType.CLASSIFICATION:
           this.readSession();
           break;
+        case DataType.CONTACT:
+          this.readContact();
+          break;
         default:
           break;
       }
@@ -531,6 +534,17 @@ export class LivetimingReader {
         }
         break;
     }
+  }
+
+  private readContact() {
+    this.data.contacts.push({
+      time: parseFloat(this.lines[this.offset + 1]),
+      raceNumbers: [
+        parseInt(this.lines[this.offset + 2]),
+        parseInt(this.lines[this.offset + 3]),
+      ],
+      velocity: parseFloat(this.lines[this.offset + 4]),
+    });
   }
 
   private getCurrentSessionKey() {

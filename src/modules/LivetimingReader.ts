@@ -593,8 +593,8 @@ export class LivetimingReader {
             angle: parseFloat(this.lines[this.offset + 5]),
             startPosition: Vec3(
               parseFloat(this.lines[this.offset + 6]),
-              parseFloat(this.lines[this.offset + 7]),
               parseFloat(this.lines[this.offset + 8]),
+              parseFloat(this.lines[this.offset + 7]),
             ),
           } as TrackSegment;
 
@@ -603,7 +603,7 @@ export class LivetimingReader {
         break;
       case DataType.TRACKPOSITION:
         {
-          if (!this.data.trackData) break;
+          if (!this.data.trackData || this.lines[this.offset + 1] === "") break;
 
           const data = {
             raceNumber: parseInt(this.lines[this.offset + 1]),

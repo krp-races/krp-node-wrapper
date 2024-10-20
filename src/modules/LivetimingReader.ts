@@ -609,18 +609,26 @@ export class LivetimingReader {
         break;
       case DataType.TRACKPOSITION:
         {
-          if (!this.data.trackData || this.lines[this.offset + 1] === "") break;
+          if (!this.data.trackData) break;
+          let entryOffset = this.offset + 1;
 
-          const data = {
-            raceNumber: parseInt(this.lines[this.offset + 1]),
-            position: Vec3(
-              parseFloat(this.lines[this.offset + 2]),
-              parseFloat(this.lines[this.offset + 3]),
-              parseFloat(this.lines[this.offset + 4]),
-            ),
-          } as TrackPosition;
+          const readEntry = () => {
+            if (!this.data.trackData) return;
 
-          this.data.trackData.positions.set(data.raceNumber, data);
+            const data = {
+              raceNumber: parseInt(this.lines[entryOffset]),
+              position: Vec3(
+                parseFloat(this.lines[entryOffset + 1]),
+                parseFloat(this.lines[entryOffset + 2]),
+                parseFloat(this.lines[entryOffset + 3]),
+              ),
+            } as TrackPosition;
+
+            this.data.trackData?.positions.set(data.raceNumber, data);
+            entryOffset += 4;
+          };
+
+          while (this.lines[entryOffset] !== "") readEntry();
         }
         break;
     }

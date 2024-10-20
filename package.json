@@ -30,7 +30,8 @@
     "format": "prettier src --check --ignore-unknown",
     "format:fix": "prettier src --write --ignore-unknown",
     "prepare": "husky",
-    "test": "jest"
+    "test": "jest",
+    "test:run": "node --inspect test.js"
   },
   "lint-staged": {
     "src/**/*": [

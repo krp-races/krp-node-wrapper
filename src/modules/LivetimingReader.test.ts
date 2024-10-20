@@ -348,6 +348,10 @@ describe("LivetimingReader", () => {
       "1.0",
       "2.0",
       "3.0",
+      "3",
+      "1.0",
+      "2.0",
+      "3.0",
       "",
     ];
 
@@ -379,6 +383,13 @@ describe("LivetimingReader", () => {
     expect(position?.position.x).toBe(1.0);
     expect(position?.position.y).toBe(2.0);
     expect(position?.position.z).toBe(3.0);
+
+    expect(result.trackData?.positions.has(3)).toBe(true);
+    const position2 = result.trackData?.positions.get(3);
+    expect(position2?.raceNumber).toBe(3);
+    expect(position2?.position.x).toBe(1.0);
+    expect(position2?.position.y).toBe(2.0);
+    expect(position2?.position.z).toBe(3.0);
   });
 
   test("Read Contact", () => {

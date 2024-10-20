@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "krp-livetiming-client",
   "description": "A client to receive live data from a dedicated or challenge server in kart racing pro.",
   "author": "Fynn Haupt <info@fynnhaupt.de>",
@@ -18,7 +17,7 @@
   "homepage": "https://github.com/krp-races/krp-livetiming-client#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/krp-races/krp-livetiming-client.git"
+    "url": "https://github.com/krp-races/krp-livetiming-client.git"
   },
   "bugs": {
     "url": "https://github.com/krp-races/krp-livetiming-client/issues"

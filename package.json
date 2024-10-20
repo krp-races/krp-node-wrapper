@@ -29,7 +29,7 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier src --check --ignore-unknown",
     "format:fix": "prettier src --write --ignore-unknown",
-    "prepare": "husky",
+    "prepare": "husky && pnpm run build",
     "test": "jest",
     "test:run": "node --inspect test_local.js"
   },

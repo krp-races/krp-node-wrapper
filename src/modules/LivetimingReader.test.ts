@@ -413,16 +413,6 @@ describe("LivetimingReader", () => {
       "-40.587",
       "0.033",
       "",
-      "TRACKPOSITION",
-      "2",
-      "1.0",
-      "2.0",
-      "3.0",
-      "3",
-      "1.0",
-      "2.0",
-      "3.0",
-      "",
     ];
 
     let result = createEmptyData();

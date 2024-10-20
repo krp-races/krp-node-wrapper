@@ -28,6 +28,6 @@ jobs:
         - name: Install dependencies
           run: pnpm install
 
-        - run: pnpm publish
+        - run: pnpm publish --access restricted
           env:
             NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

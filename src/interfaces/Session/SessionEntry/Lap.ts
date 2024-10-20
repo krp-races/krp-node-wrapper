@@ -4,7 +4,7 @@ export interface Lap {
   raceNumber: number;
   sessionTime: number;
   lapTime: number;
-  lapNumber: number;
+  lapNumber?: number;
   splits: Vec2;
   speed: number;
   invalid: boolean;

@@ -322,7 +322,7 @@ describe("LivetimingReader", () => {
     expect(entry?.online).toBe(false);
   });
 
-  test("Read TrackData", () => {
+  test("Read TrackData (With Positions)", () => {
     const data = [
       "MSG",
       "1",
@@ -390,6 +390,63 @@ describe("LivetimingReader", () => {
     expect(position2?.position.x).toBe(1.0);
     expect(position2?.position.y).toBe(2.0);
     expect(position2?.position.z).toBe(3.0);
+  });
+
+  test("Read TrackData (Without Positions)", () => {
+    const data = [
+      "MSG",
+      "1",
+      "TRACKDATA",
+      "1180.2",
+      "395.7",
+      "791.4",
+      "65.0",
+      "1",
+      "",
+      "TRACKSEGMENT",
+      "0",
+      "0",
+      "56.308",
+      "0.000",
+      "5.217",
+      "-47.795",
+      "-40.587",
+      "0.033",
+      "",
+      "TRACKPOSITION",
+      "2",
+      "1.0",
+      "2.0",
+      "3.0",
+      "3",
+      "1.0",
+      "2.0",
+      "3.0",
+      "",
+    ];
+
+    let result = createEmptyData();
+    const reader = new LivetimingReader(data, result);
+    result = reader.read();
+
+    expect(result.trackData).toBeDefined();
+    expect(result.trackData?.startPosition).toBe(1180.2);
+    expect(result.trackData?.splitPositions.x).toBe(395.7);
+    expect(result.trackData?.splitPositions.y).toBe(791.4);
+    expect(result.trackData?.speedTrapPosition).toBe(65);
+    expect(result.trackData?.numSegments).toBe(1);
+    expect(result.trackData?.positions.size).toBe(0);
+
+    expect(result.trackData?.segments.has(0)).toBe(true);
+    const segment = result.trackData?.segments.get(0);
+    expect(segment?.segmentNumber).toBe(0);
+    expect(segment?.type).toBe(TrackSegmentType.STRAIGHT);
+    expect(segment?.length).toBe(56.308);
+    expect(segment?.radius).toBe(0.0);
+    expect(segment?.angle).toBe(5.217);
+    expect(segment?.startPosition.x).toBe(-47.795);
+    expect(segment?.startPosition.z).toBe(-40.587);
+    expect(segment?.startPosition.y).toBe(0.033);
   });
 
   test("Read Contact", () => {

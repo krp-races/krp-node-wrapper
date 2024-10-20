@@ -37,4 +37,69 @@ describe("LivetimingReader", () => {
     expect(result.event?.track.length).toBe(1187.2);
     expect(result.event?.allowed).toStrictEqual(["KF1", "FS250", "F100"]);
   });
+
+  test("Read Entry (Add)", () => {
+    const data = [
+      "MSG",
+      "1",
+      "ENTRY",
+      "2",
+      "FynniX",
+      "CRG KF1",
+      "CRG KF1",
+      "KF1",
+      "FF011000010893E603",
+      "",
+      "",
+    ];
+
+    let result = createEmptyData();
+    const reader = new LivetimingReader(data, result);
+    result = reader.read();
+
+    expect(result.entries.has(2)).toBe(true);
+    const entry = result.entries.get(2);
+    expect(entry?.raceNumber).toBe(2);
+    expect(entry?.name).toBe("FynniX");
+    expect(entry?.kart.name).toBe("CRG KF1");
+    expect(entry?.kart.shortName).toBe("CRG KF1");
+    expect(entry?.kart.categories).toStrictEqual(["KF1"]);
+    expect(entry?.guid).toBe("FF011000010893E603");
+    expect(entry?.extra).toBe("");
+    expect(entry?.online).toBe(true);
+  });
+
+  test("Read Entry (Remove)", () => {
+    const data = [
+      "MSG",
+      "1",
+      "ENTRY",
+      "2",
+      "FynniX",
+      "CRG KF1",
+      "CRG KF1",
+      "KF1",
+      "FF011000010893E603",
+      "",
+      "",
+      "ENTRYREMOVE",
+      "2",
+      "",
+    ];
+
+    let result = createEmptyData();
+    const reader = new LivetimingReader(data, result);
+    result = reader.read();
+
+    expect(result.entries.has(2)).toBe(true);
+    const entry = result.entries.get(2);
+    expect(entry?.raceNumber).toBe(2);
+    expect(entry?.name).toBe("FynniX");
+    expect(entry?.kart.name).toBe("CRG KF1");
+    expect(entry?.kart.shortName).toBe("CRG KF1");
+    expect(entry?.kart.categories).toStrictEqual(["KF1"]);
+    expect(entry?.guid).toBe("FF011000010893E603");
+    expect(entry?.extra).toBe("");
+    expect(entry?.online).toBe(false);
+  });
 });

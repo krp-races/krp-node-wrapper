@@ -587,7 +587,7 @@ export class LivetimingReader {
 
           const data = {
             segmentNumber: parseInt(this.lines[this.offset + 1]),
-            type: this.lines[this.offset + 2] as TrackSegmentType,
+            type: parseInt(this.lines[this.offset + 2]) as TrackSegmentType,
             length: parseFloat(this.lines[this.offset + 3]),
             radius: parseFloat(this.lines[this.offset + 4]),
             angle: parseFloat(this.lines[this.offset + 5]),

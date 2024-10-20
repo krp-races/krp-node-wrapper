@@ -7,4 +7,5 @@ export interface Lap {
   lapNumber: number;
   splits: Vec2;
   speed: number;
+  invalid: boolean;
 }

@@ -311,6 +311,7 @@ export class LivetimingReader {
             lapNumber,
             splits,
             speed,
+            invalid: false,
           };
 
           currentSession.entries.set(raceNumber, currentEntry);
@@ -343,6 +344,7 @@ export class LivetimingReader {
             lapNumber,
             splits,
             speed,
+            invalid: false,
           };
 
           currentSession.entries.set(raceNumber, currentEntry);
@@ -383,14 +385,15 @@ export class LivetimingReader {
           if (!currentSession) break;
 
           const raceNumber = parseInt(this.lines[this.offset + 1]);
-          const sessionTime = parseFloat(this.lines[this.offset + 2]);
-          const lapTime = parseFloat(this.lines[this.offset + 3]);
-          const lapNumber = parseInt(this.lines[this.offset + 4]);
+          const invalid = parseInt(this.lines[this.offset + 2]) === 1;
+          const sessionTime = parseFloat(this.lines[this.offset + 3]);
+          const lapTime = parseFloat(this.lines[this.offset + 4]);
+          const lapNumber = parseInt(this.lines[this.offset + 5]);
           const splits = Vec2(
-            parseFloat(this.lines[this.offset + 5]),
             parseFloat(this.lines[this.offset + 6]),
+            parseFloat(this.lines[this.offset + 7]),
           );
-          const speed = parseFloat(this.lines[this.offset + 7]);
+          const speed = parseFloat(this.lines[this.offset + 8]);
 
           const currentEntry = currentSession.entries.get(raceNumber);
           if (!currentEntry) break;
@@ -402,6 +405,7 @@ export class LivetimingReader {
             lapNumber,
             splits,
             speed,
+            invalid,
           });
 
           currentSession.entries.set(raceNumber, currentEntry);

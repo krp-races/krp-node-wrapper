@@ -10,6 +10,7 @@ import { PenaltyType } from "../enums/Session/SessionEntry/PenaltyType";
 import { SessionState } from "../enums/Session/SessionState";
 import { SessionType } from "../enums/Session/SessionType";
 import { WeatherCondition } from "../enums/Session/WeatherCondition";
+import { TrackSegmentType } from "../enums/TrackData/TrackSegmentType";
 import { ChallengeEvent } from "../interfaces/Event/ChallengeEvent";
 import { ChallengePracticeData } from "../interfaces/Event/ChallengePracticeData";
 import { ChallengeRaceData } from "../interfaces/Event/ChallengeRaceData";
@@ -17,6 +18,10 @@ import { LiveTimingData } from "../interfaces/LiveTimingData";
 import { RaceData } from "../interfaces/Session/Classification/RaceData";
 import { TimeData } from "../interfaces/Session/Classification/TimeData";
 import { SessionEntry } from "../interfaces/Session/SessionEntry/SessionEntry";
+import { TrackPosition } from "../interfaces/TrackData/TrackPosition";
+import { TrackSegment } from "../interfaces/TrackData/TrackSegment";
+import { Vec2 } from "../utils/Vec2";
+import { Vec3 } from "../utils/Vec3";
 
 export class LivetimingReader {
   private offset: number;
@@ -60,6 +65,11 @@ export class LivetimingReader {
           break;
         case DataType.CONTACT:
           this.readContact();
+          break;
+        case DataType.TRACKDATA:
+        case DataType.TRACKSEGMENT:
+        case DataType.TRACKPOSITION:
+          this.readTrackData();
           break;
         default:
           break;
@@ -545,6 +555,64 @@ export class LivetimingReader {
       ],
       velocity: parseFloat(this.lines[this.offset + 4]),
     });
+  }
+
+  private readTrackData() {
+    const type = this.lines[this.offset] as DataType;
+
+    switch (type) {
+      case DataType.TRACKDATA:
+        {
+          this.data.trackData = {
+            startPosition: parseFloat(this.lines[this.offset + 1]),
+            splitPositions: Vec2(
+              parseFloat(this.lines[this.offset + 2]),
+              parseFloat(this.lines[this.offset + 3]),
+            ),
+            speedTrapPosition: parseFloat(this.lines[this.offset + 4]),
+            numSegments: parseInt(this.lines[this.offset + 5]),
+            segments: new Map<number, TrackSegment>(),
+            positions: new Map<number, TrackPosition>(),
+          };
+        }
+        break;
+      case DataType.TRACKSEGMENT:
+        {
+          if (!this.data.trackData) break;
+
+          const data = {
+            segmentNumber: parseInt(this.lines[this.offset + 1]),
+            type: this.lines[this.offset + 2] as TrackSegmentType,
+            length: parseFloat(this.lines[this.offset + 3]),
+            radius: parseFloat(this.lines[this.offset + 4]),
+            angle: parseFloat(this.lines[this.offset + 5]),
+            startPosition: Vec3(
+              parseFloat(this.lines[this.offset + 6]),
+              parseFloat(this.lines[this.offset + 7]),
+              parseFloat(this.lines[this.offset + 8]),
+            ),
+          } as TrackSegment;
+
+          this.data.trackData.segments.set(data.segmentNumber, data);
+        }
+        break;
+      case DataType.TRACKPOSITION:
+        {
+          if (!this.data.trackData) break;
+
+          const data = {
+            raceNumber: parseInt(this.lines[this.offset + 1]),
+            position: Vec3(
+              parseFloat(this.lines[this.offset + 2]),
+              parseFloat(this.lines[this.offset + 3]),
+              parseFloat(this.lines[this.offset + 4]),
+            ),
+          } as TrackPosition;
+
+          this.data.trackData.positions.set(data.raceNumber, data);
+        }
+        break;
+    }
   }
 
   private getCurrentSessionKey() {

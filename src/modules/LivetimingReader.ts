@@ -496,7 +496,6 @@ export class LivetimingReader {
                 status: KartStatus.NONE,
               } as TimeData;
 
-              console.log(this.lines[entryOffset]);
               entry.lapTime = parseFloat(this.lines[entryOffset]);
               entryOffset++;
 

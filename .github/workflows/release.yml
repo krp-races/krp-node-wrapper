@@ -34,5 +34,5 @@ jobs:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 permissions:
+  id-token: write
   contents: read
-  packages: write 

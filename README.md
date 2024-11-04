@@ -1,4 +1,4 @@
-# Mapped.js
+# KRP Node Wrapper
 
 A node.js wrapper for a dedicated or challenge server in kart racing pro.
 

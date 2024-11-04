@@ -1,6 +1,6 @@
-const Client = require(".").default;
+const {LivetimingClient} = require(".").default;
 
-const client = new Client({
+const client = new LivetimingClient({
   type: "udp4",
   host: "127.0.0.1",
   port: 5100,

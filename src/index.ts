@@ -1,4 +1,4 @@
 import { LivetimingClient } from "./modules/LivetimingClient";
 
 export { LivetimingClient } from "./modules/LivetimingClient";
-export default LivetimingClient;
+export default { LivetimingClient };

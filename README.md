@@ -19,6 +19,7 @@ pnpm add @krp-races/krp-node-wrapper
 ## Supported Features
 
 - Server Livetiming
+- Server Remote Admin
 
 ## API Documentation
 

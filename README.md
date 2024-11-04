@@ -65,6 +65,56 @@ client.on("data", (data) => {
 });
 ```
 
+# RemoteAdminClient
+
+## Important
+
+The "QUIT" command will always lead to a timeout because the server doesn't answer afterwards.
+
+## Initialisation
+
+```js
+import { RemoteAdminClient } from "@krp-races/krp-node-wrapper";
+
+const client = new RemoteAdminClient({
+  type: "udp4",
+  host: "127.0.0.1",
+  port: 5100,
+  password: "123",
+});
+
+console.log("Enable Remote Admin Client");
+client.setEnabled(true);
+```
+
+## Methods
+
+| Methods                                                 | Description            |
+| ------------------------------------------------------- | ---------------------- |
+| setEnabled(enabled: boolean)                            | Set Client enabled.    |
+| getEnabled()                                            | Is Client enabled?     |
+| getStatus()                                             | Current Client status. |
+| sendCommand(command: 'QUIT' \| 'MSG', message?: string) | Send command.          |
+
+```js
+client.sendCommand('QUIT');
+client.sendCommand('MSQ', 'Hello World!);
+```
+
+## Events
+
+| Event          | Description           |
+| -------------- | --------------------- |
+| "connected"    | Client connected.     |
+| "disconnected" | Client disconnected.  |
+| "error"        | Client error occured. |
+
+```js
+client.on("data", (data) => {
+  console.log(data);
+});
+```
+
 ## Constribute
 
 Guidelines are defined [here](https://github.com/krp-races/krp-node-wrapper/blob/main/CONTRIBUTING.md).

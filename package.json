@@ -3,7 +3,7 @@
   "description": "A node.js wrapper for a dedicated or challenge server in kart racing pro.",
   "keywords": ["kart", "racing", "pro", "krp", "wrapper", "server"],
   "author": "Fynn Haupt <info@fynnhaupt.de>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "AGPL-3.0-only",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -28,7 +28,8 @@
     "format:fix": "prettier src --write --ignore-unknown",
     "prepare": "husky && pnpm run build",
     "test": "jest",
-    "test:run": "node --inspect test_local.js"
+    "test:run:livetiming": "node --inspect test_local_livetiming.js",
+    "test:run:remoteadmin": "node --inspect test_local_remoteadmin.js"
   },
   "lint-staged": {
     "src/**/*": [

@@ -29,9 +29,9 @@ body:
       label: Validations
       description: Before submitting the issue, please make sure you do the following
       options:
-        - label: Read the [Contributing Guidelines](https://github.com/FynniX/mapped.js/blob/main/CONTRIBUTING.md).
+        - label: Read the [Contributing Guidelines](https://github.com/krp-races/krp-node-wrapper/blob/main/CONTRIBUTING.md).
           required: true
-        - label: Read the [docs](https://fynnix.github.io/mapped.js/).
+        - label: Read the [docs](https://github.com/krp-races/krp-node-wrapper).
           required: true
-        - label: Check that there isn't [already an issue](https://github.com/FynniX/mapped.js/issues) that requests the same feature to avoid creating a duplicate.
+        - label: Check that there isn't [already an issue](https://github.com/krp-races/krp-node-wrapper/issues) that reports the same bug to avoid creating a duplicate.
           required: true

@@ -57,7 +57,7 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     return this.status;
   }
 
-  public async connect() {
+  private async connect() {
     if (this.status === ClientStatus.CONNECTED) return;
     this.setStatus(ClientStatus.CONNECTING);
 
@@ -100,7 +100,7 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     return Promise.race([promise, timeout(5000)]);
   }
 
-  public disconnect() {
+  private disconnect() {
     if (this.status !== ClientStatus.CONNECTED) return;
 
     const data = writeStringLines(["DISCONNECT"]);
@@ -110,7 +110,7 @@ export class LivetimingClient extends EventEmitter<ClientEvents> {
     this.emit("disconnected");
   }
 
-  public async keepAlive() {
+  private async keepAlive() {
     if (this.status !== ClientStatus.CONNECTED) return;
 
     const data = writeStringLines(["KEEPALIVE"]);

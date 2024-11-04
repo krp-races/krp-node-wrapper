@@ -1,35 +1,23 @@
 import { EventEmitter } from "events";
-import { SocketWrapper } from "./SocketWrapper";
+import { ClientEvents } from "../interfaces/ClientEvents";
 import { ClientStatus } from "../enums/ClientStatus";
-import { readStringLines } from "../utils/readStringLines";
+import { ClientOptions } from "../interfaces/ClientOptions";
+import { SocketWrapper } from "./SocketWrapper";
 import { writeStringLines } from "../utils/writeStringLines";
+import { readStringLines } from "../utils/readStringLines";
 import { timeout } from "../utils/timeout";
-import { LivetimingReader } from "./LivetimingReader";
-import { LiveTimingData } from "../interfaces/LiveTimingData";
-import { Entry } from "../interfaces/Entry/Entry";
-import { SessionType } from "../enums/Session/SessionType";
-import { Session } from "../interfaces/Session/Session";
-import { LiveTimingClientOptions } from "../interfaces/LiveTimingClientOptions";
-import { LiveTimingClientEvents } from "../interfaces/LiveTimingClientEvents";
 
-const defaultData: LiveTimingData = {
-  entries: new Map<number, Entry>(),
-  sessions: new Map<SessionType, Session>(),
-  contacts: [],
-};
-
-export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
-  private data: LiveTimingData = defaultData;
+export class RemoteAdminClient extends EventEmitter<ClientEvents> {
   private enabled: boolean = false;
   private status: ClientStatus = ClientStatus.NOT_CONNECTED;
-  private readonly options: LiveTimingClientOptions;
+  private messageId: number = 0;
+  private readonly options: ClientOptions;
   private readonly socket: SocketWrapper;
 
-  constructor(options: LiveTimingClientOptions) {
+  constructor(options: ClientOptions) {
     super();
     this.options = options;
     this.socket = new SocketWrapper(options);
-    this.socket.on("message", this.handleMessage.bind(this));
     this.socket.on("error", (err: Error) => {
       this.disconnect();
       this.handleError(err);
@@ -51,6 +39,7 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
 
   private setStatus(status: ClientStatus) {
     this.status = status;
+    this.messageId = 0;
   }
 
   public getStatus() {
@@ -110,6 +99,39 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
     this.emit("disconnected");
   }
 
+  public async sendCommand(command: "QUIT" | "MSG", message?: string) {
+    if (this.status !== ClientStatus.CONNECTED) return;
+
+    const messageId = this.messageId;
+    const base = ["CMD", messageId.toFixed(0), command];
+    if (command === "MSG") {
+      if (!message || message === "")
+        throw new Error("Message is required for MSG command");
+      base.push(message);
+    }
+
+    const data = writeStringLines(base);
+    this.socket.send(data);
+
+    // Increase message id for next command
+    this.messageId++;
+
+    const promise = new Promise((resolve) => {
+      const listener = (msg: Buffer) => {
+        const lines = readStringLines(msg);
+
+        if (lines[0] === "ACK" && parseInt(lines[1]) === messageId) {
+          resolve(undefined);
+          this.socket.removeListener("message", listener);
+        }
+      };
+
+      this.socket.on("message", listener);
+    });
+
+    return Promise.race([promise, timeout(5000)]);
+  }
+
   private async keepAlive() {
     if (this.status !== ClientStatus.CONNECTED) return;
 
@@ -131,24 +153,6 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
     return Promise.race([promise, timeout(5000)]);
   }
 
-  private start(trackPositions: 0 | 1, collisions: 0 | 1 | 2) {
-    if (this.status !== ClientStatus.CONNECTED) return;
-
-    const data = writeStringLines([
-      "START",
-      trackPositions.toFixed(0),
-      collisions.toFixed(0),
-    ]);
-
-    this.socket.send(data);
-  }
-
-  private acknowledge(messageId: string) {
-    if (this.status !== ClientStatus.CONNECTED) return;
-    const data = writeStringLines(["ACK", messageId]);
-    this.socket.send(data);
-  }
-
   private async handleReconnect() {
     // If not enabled, do not attempt to reconnect
     if (!this.enabled) return;
@@ -158,7 +162,6 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
     // When connected to a server, do not attempt to reconnect
     if (this.status === ClientStatus.CONNECTED) {
       this.emit("connected");
-      this.start(this.options.trackPositions, this.options.collisions);
       return;
     }
 
@@ -172,29 +175,6 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
     await this.keepAlive().catch((err) => this.handleError(err));
 
     setTimeout(this.handleKeepAlive.bind(this), 15000);
-  }
-
-  private handleMessage(msg: Buffer) {
-    if (this.status !== ClientStatus.CONNECTED) return;
-    const lines = readStringLines(msg);
-
-    switch (lines[0]) {
-      case "MSG":
-        {
-          const reader = new LivetimingReader(lines, this.data);
-          this.data = reader.read();
-          this.acknowledge(lines[1]);
-          this.emit("data", this.data);
-        }
-        break;
-      case "DATA":
-        {
-          const reader = new LivetimingReader(lines, this.data, 1);
-          this.data = reader.read();
-          this.emit("data", this.data);
-        }
-        break;
-    }
   }
 
   private handleError(err: Error) {

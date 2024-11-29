@@ -3,7 +3,7 @@
   "description": "A node.js wrapper for a dedicated or challenge server in kart racing pro.",
   "keywords": ["kart", "racing", "pro", "krp", "wrapper", "server"],
   "author": "Fynn Haupt <info@fynnhaupt.de>",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "AGPL-3.0-only",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -13,6 +13,66 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
+    },
+    "./interfaces/*": {
+      "types": "./dist/interfaces/*.d.ts",
+      "import": "./dist/interfaces/*.js",
+      "default": "./dist/interfaces/*.js"
+    },
+    "./interfaces/Contact/*": {
+      "types": "./dist/interfaces/Contact/*.d.ts",
+      "import": "./dist/interfaces/Contact/*.js",
+      "default": "./dist/interfaces/Contact/*.js"
+    },
+    "./interfaces/Entry/*": {
+      "types": "./dist/interfaces/Entry/*.d.ts",
+      "import": "./dist/interfaces/Entry/*.js",
+      "default": "./dist/interfaces/Entry/*.js"
+    },
+    "./interfaces/Event/*": {
+      "types": "./dist/interfaces/Event/*.d.ts",
+      "import": "./dist/interfaces/Event/*.js",
+      "default": "./dist/interfaces/Event/*.js"
+    },
+    "./interfaces/Session/*": {
+      "types": "./dist/interfaces/Session/*.d.ts",
+      "import": "./dist/interfaces/Session/*.js",
+      "default": "./dist/interfaces/Session/*.js"
+    },
+    "./interfaces/Session/Classification/*": {
+      "types": "./dist/interfaces/Session/Classification/*.d.ts",
+      "import": "./dist/interfaces/Session/Classification/*.js",
+      "default": "./dist/interfaces/Session/Classification/*.js"
+    },
+    "./interfaces/Session/SessionEntry/*": {
+      "types": "./dist/interfaces/Session/SessionEntry/*.d.ts",
+      "import": "./dist/interfaces/Session/SessionEntry/*.js",
+      "default": "./dist/interfaces/Session/SessionEntry/*.js"
+    },
+    "./interfaces/TrackData/*": {
+      "types": "./dist/interfaces/TrackData/*.d.ts",
+      "import": "./dist/interfaces/TrackData/*.js",
+      "default": "./dist/interfaces/TrackData/*.js"
+    },
+    "./enums/*": {
+      "types": "./dist/enums/*.d.ts",
+      "import": "./dist/enums/*.js",
+      "default": "./dist/enums/*.js"
+    },
+    "./enums/Event/*": {
+      "types": "./dist/enums/Event/*.d.ts",
+      "import": "./dist/enums/Event/*.js",
+      "default": "./dist/enums/Event/*.js"
+    },
+    "./enums/Session/*": {
+      "types": "./dist/enums/Session/*.d.ts",
+      "import": "./dist/enums/Session/*.js",
+      "default": "./dist/enums/Session/*.js"
+    },
+    "./enums/TrackData/*": {
+      "types": "./dist/enums/TrackData/*.d.ts",
+      "import": "./dist/enums/TrackData/*.js",
+      "default": "./dist/enums/TrackData/*.js"
     }
   },
   "homepage": "https://github.com/krp-races/krp-node-wrapper#readme",

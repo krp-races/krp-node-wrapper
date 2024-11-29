@@ -30,11 +30,7 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
     this.options = options;
     this.socket = new SocketWrapper(options);
     this.socket.on("message", this.handleMessage.bind(this));
-    this.socket.on("error", (err: Error) => {
-      this.disconnect();
-      this.handleError(err);
-    });
-
+    this.socket.on("error", this.handleError.bind(this));
     this.on("connected", this.handleKeepAlive.bind(this));
   }
 
@@ -203,5 +199,6 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
 
   private handleError(err: Error) {
     this.emit("error", err);
+    this.disconnect();
   }
 }

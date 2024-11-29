@@ -18,11 +18,7 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
     super();
     this.options = options;
     this.socket = new SocketWrapper(options);
-    this.socket.on("error", (err: Error) => {
-      this.disconnect();
-      this.handleError(err);
-    });
-
+    this.socket.on("error", this.handleError.bind(this));
     this.on("connected", this.handleKeepAlive.bind(this));
   }
 
@@ -185,5 +181,6 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
 
   private handleError(err: Error) {
     this.emit("error", err);
+    this.disconnect();
   }
 }

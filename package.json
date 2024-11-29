@@ -3,7 +3,7 @@
   "description": "A node.js wrapper for a dedicated or challenge server in kart racing pro.",
   "keywords": ["kart", "racing", "pro", "krp", "wrapper", "server"],
   "author": "Fynn Haupt <info@fynnhaupt.de>",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "AGPL-3.0-only",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -97,7 +97,9 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
       this.socket.on("message", listener);
     });
 
-    return Promise.race([promise, timeout(5000)]);
+    return Promise.race([promise, timeout(5000)]).catch((err) =>
+      this.handleError(err),
+    );
   }
 
   private disconnect() {
@@ -128,7 +130,9 @@ export class LivetimingClient extends EventEmitter<LiveTimingClientEvents> {
       this.socket.on("message", listener);
     });
 
-    return Promise.race([promise, timeout(5000)]);
+    return Promise.race([promise, timeout(5000)]).catch((err) =>
+      this.handleError(err),
+    );
   }
 
   private start(trackPositions: 0 | 1, collisions: 0 | 1 | 2) {

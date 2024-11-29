@@ -86,7 +86,9 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
       this.socket.on("message", listener);
     });
 
-    return Promise.race([promise, timeout(5000)]);
+    return Promise.race([promise, timeout(5000)]).catch((err) =>
+      this.handleError(err),
+    );
   }
 
   private disconnect() {
@@ -129,7 +131,9 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
       this.socket.on("message", listener);
     });
 
-    return Promise.race([promise, timeout(5000)]);
+    return Promise.race([promise, timeout(5000)]).catch((err) =>
+      this.handleError(err),
+    );
   }
 
   private async keepAlive() {
@@ -150,7 +154,9 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
       this.socket.on("message", listener);
     });
 
-    return Promise.race([promise, timeout(5000)]);
+    return Promise.race([promise, timeout(5000)]).catch((err) =>
+      this.handleError(err),
+    );
   }
 
   private async handleReconnect() {

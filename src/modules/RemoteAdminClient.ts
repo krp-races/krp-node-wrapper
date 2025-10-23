@@ -10,7 +10,7 @@ import { timeout } from "../utils/timeout";
 export class RemoteAdminClient extends EventEmitter<ClientEvents> {
   private enabled: boolean = false;
   private status: ClientStatus = ClientStatus.NOT_CONNECTED;
-  private messageId: number = 0;
+  private messageId: number = 1;
   private readonly options: ClientOptions;
   private readonly socket: SocketWrapper;
 
@@ -35,7 +35,7 @@ export class RemoteAdminClient extends EventEmitter<ClientEvents> {
 
   private setStatus(status: ClientStatus) {
     this.status = status;
-    this.messageId = 0;
+    this.messageId = 1;
   }
 
   public getStatus() {
